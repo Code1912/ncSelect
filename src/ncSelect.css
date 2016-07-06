@@ -1,0 +1,70 @@
+
+.nc-combo-container{
+    border:1px solid  #D2D6DE;
+    padding: 2px;
+}
+.nc-combo-container ul{
+   list-style-type: none;
+    line-height: 20px;
+    margin: 0px; padding: 0px;
+    display: inline-block;
+    width: 100%;
+}
+.nc-combo-container ul li{
+    border-radius: 5px;
+    float: left;
+    box-sizing: border-box;
+    margin-left:2px;
+}
+.nc-combo-selected-remove{
+    color: rgba(255, 255, 255, 0.701961);
+    font-size: 14px;
+    cursor: pointer;
+    font-weight: bold;
+
+}
+.nc-combo-input {
+    height: 20px;   margin-left:2px;box-sizing: border-box;
+    border:none;
+    list-style: none;
+    outline: none;
+}.nc-combo-selected {
+     background-color: #3c8dbc;
+     border-color: #367fa9;
+     padding: 1px 5px;
+     color: #fff;
+ }
+.nc-combo-input:focus {
+
+    list-style: none;
+    outline: none;
+}
+.nc-combo-options-container{
+  height: 100px;overflow-y:auto; overflow-x: hidden;
+    border-left:1px solid  #D2D6DE;
+    border-top:1px solid  #D2D6DE;
+    border-bottom:1px solid  #D2D6DE; width: 100%; background-color: white;
+}
+.nc-combo-options-container ul{
+    list-style-type: none;
+    line-height: 20px;
+    margin: 0px; padding: 0px;
+    display: inline-block;
+    width: 100%;
+}
+.nc-combo-options-container ul li {
+  padding: 2px 5px; cursor: pointer;
+}
+
+.nc-combo-options-container ul li.selected{
+    background-color: #3c8dbc;
+    border-color: #367fa9;
+
+    color: #fff;
+}
+.nc-combo-options-container ul li:hover,.nc-combo-options-container ul li.selected:hover{
+    background-color: #3a7fa9;
+    border-color: #367fa9;
+
+    color: #fff;
+}
