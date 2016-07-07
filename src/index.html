@@ -9,21 +9,21 @@
     <link type="text/css" rel="stylesheet" href="ncSelect.css"  />
 </head>
 <body>
-<div style="position: relative; width: 200px"  >
+<div class="nc-combo-layer" style="  width: 700px"  >
     <div  class="nc-combo-container">
         <ul  >
-            <li class="nc-combo-selected">
+            <li class="selected">
                 <span class="nc-combo-selected-remove">&times; </span>sdf</li>
-            <li class="nc-combo-selected"> <span class="nc-combo-selected-remove">&times; </span>sdf</li>
-            <li class="nc-combo-selected"> <span class="nc-combo-selected-remove">&times; </span>sdf</li>
-            <li class="nc-combo-selected"> <span class="nc-combo-selected-remove">&times; </span>sdf</li>
-            <li class="nc-combo-selected"> <span class="nc-combo-selected-remove">&times; </span>sdf</li>
-            <li class="nc-combo-selected"> <span class="nc-combo-selected-remove">&times; </span>sdf</li>
-            <li class="nc-combo-selected"> <span class="nc-combo-selected-remove">&times; </span>sdf</li>
-            <input class="nc-combo-input" type="text"/>
+            <li class="selected"> <span class="nc-combo-selected-remove">&times; </span>sdf</li>
+            <li class="selected"> <span class="nc-combo-selected-remove">&times; </span>sdf</li>
+            <li class="selected"> <span class="nc-combo-selected-remove">&times; </span>sdf</li>
+            <li class="selected"> <span class="nc-combo-selected-remove">&times; </span>sdf</li>
+            <li class="selected"> <span class="nc-combo-selected-remove">&times; </span>sdf</li>
+            <li class="selected"> <span class="nc-combo-selected-remove">&times; </span>sdf</li>
+            <li> <input class="nc-combo-input" type="text"/></li>
         </ul>
     </div>
-    <div   class="nc-combo-options-container" style="position: absolute;">
+    <div   class="nc-combo-options-container" >
         <ul>
             <li class="selected">sdfsdf</li>
             <li>111</li>
@@ -41,9 +41,22 @@
             <li>5</li>
         </ul>
     </div>
+
+    <div style="margin-top: 700px" id="test"></div>
 </div>
 <button>sdf</button>
 </body>
 <script src="jQuery-2.1.4.min.js"></script>
 <script src="ncSelect.js"></script>
+<script>
+    $.ncControl.multiCombo("test").setOptions({
+        dataSource:[{text:"111",value:1},
+            {text:"222",value:2},
+            {text:"333",value:3},
+            {text:"444",value:4},
+        ],
+        selectedItems:[{text:"111",value:1},
+            {text:"222",value:2}]
+    });
+</script>
 </html>

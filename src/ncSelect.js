@@ -19,6 +19,14 @@
             }
         }
     }
+    if(!Array.prototype.remove){
+        Array.prototype.remove=function (item) {
+            var index=this.indexOf(item);
+            if(index>-1){
+                this.splice(index,1);
+            }
+        }
+    }
     if(!Array.prototype.any) {
         Array.prototype.any = function (fn) {
             if (this.length == 0) {
@@ -120,51 +128,198 @@
 })();
 
 (function (ncControl) {
-    var _allowType=[String,jQuery]
-    var _prefix="combo";
-    var _template="<div></div>";
-    var _comboArray=[];
+    var _allowType=[String]
+    var _prefix='combo';
+    var _layerTemplate='<div class="nc-combo-layer"  >\
+                    <div  class="nc-combo-container">\
+                        <ul>\
+                         <li> <input class="nc-combo-input" type="text"/></li>\
+                        </ul>\
+                    </div>\
+                    <div   class="nc-combo-options-container" >\
+                        <ul> \
+                        </ul>\
+                    </div>\
+                </div>';
+    var _selectedItemTemplate='<li class="selected">\
+                             {text}\
+                             <span class="nc-combo-selected-remove">&times; </span>\
+                            </li>';
+    var _optionItemTemplate='<li> {text}</li>';
+    var _comboDic={};
     function isAllow(e) {
         return _allowType.any(function (p) {
             return e instanceof p;
         });
     }
-    var BaseCombo=function (ele) {
+    var MultiCombo=function (id) {
+        this.id=id;
+        this.selectedItems=[];
+        this.dataSource=[];
+        this.init();
+    };
+    MultiCombo.prototype.init=function () {
+        this.initDom();
+        this.initEvent();
+    };
+    MultiCombo.prototype.initDom=function () {
+        this.original=$("#".concat(this.id));
+        this.layer=$(_layerTemplate);
+        this.selectedContainer=this.layer.find(".nc-combo-container ul");
+        this.searchInput=this.layer.find(".nc-combo-container ul li input");
+        this.optionsContainer=this.layer.find(".nc-combo-options-container ul");
 
+        this.original.hide();
+        this.layer.insertAfter(this.original);
+    };
+    MultiCombo.prototype.initEvent=function () {
+        var that=this;
+        this.searchInput.on("focus",function () {
 
-    }
-    function combo(jqObj ) {
-        var $self=this;
-        $self.id=Math.uuid();
-        jqObj.attr("nc-id",this.id);
-        $self._jqObj=jqObj;
-        $self.setOptions=function (opt) {
-
-        }
-        $self.destroy=function () {
-            $self._jqObj.remove();
-        }
-    }
-
-    function setDefaults(opt) {
-        return $.extend({
-
-        },opt);
-    }
-    ncControl.combo=  function  (obj) {
-        if (isAllow(obj)) {
-            return null;
-        }
-        var comboJq = obj instanceof String ? $(obj) : obj;
-        if (comboJq.length == 0) {
-            return
-        }
-        var combo = _comboArray.findOne(function (p) {
-            return p.id = comboJq.attr("nc-id");
+            that.optionsContainer.parent().show();
         });
-        if (combo) {
-            return combo;
+        this.optionsContainer.parent().on("blur",function () {
+            that.optionsContainer.parent().hide();
+        });
+        this.layer.on("click",function () {
+            that.searchInput.focus();
+        }) ;
+    };
+    MultiCombo.prototype.setOptions=function (opts) {
+        var options=$.extend({
+            height:50,
+            dataSource:[],
+            selectedItems:[]
+        },opts);
+        var that=this;
+        that.dataSource=[];
+        that.selectedItems=[];
+        options.dataSource.forEach(function (p) {
+            var item=new OptionItem(p.text,p.value,p);
+            item.clickEvent=function (e,data) {
+                if(data.isChecked)
+                {
+                    that.addSelectedItem(data.text,data.value,data.data)
+                }
+                else {
+                   that.removeSelectedItem(data.value);
+                }
+            };
+            that.optionsContainer.append(item.dom);
+            that.dataSource.push(item);
+        });
+        options.selectedItems.forEach(function (p) {
+            that.addSelectedItem(p.text,p.value,p);
+        })
+    };
+    MultiCombo.prototype.addSelectedItem=function (text, value, originalData) {
+        var that=this;
+        if(that.selectedItems.any(function (n) {
+                return n.value===value;
+            })){
+            return;
+        };
+        var optionItem= that.dataSource.findOne(function (n) {
+            return n.value===value;
+        });
+        if(optionItem)
+        {
+            optionItem.check();
         }
-        return new combo(combo[0]);
+        var item=new SelectedItem(text,value,originalData);
+        item.removeEvent=function (e,data) {
+            that.removeSelectedItem(data.value);
+        };
+        item.dom.insertBefore(that.searchInput.parent());
+        that.selectedItems.push(item);
+    };
+    MultiCombo.prototype.removeSelectedItem=function (value) {
+        var item=this.selectedItems.findOne(function (n) {
+            return n.value===value;
+        });
+        if(item){
+            this.selectedItems.remove(item);
+            item.dom.remove();
+        }
+    };
+    var OptionItem=function (text,value,originalData) {
+        this.text=text;
+        this.value=value;
+        this.clickEvent=null;
+        this.isChecked=false;
+        this.data=originalData;
+        this.init();
+    };
+    OptionItem.prototype.init=function () {
+        this.initDom();
+        this.initEvent();
+    };
+    OptionItem.prototype.initDom=function () {
+        this.dom=$(_optionItemTemplate.replace(/\{text}/g,this.text));
+    };
+    OptionItem.prototype.initEvent=function () {
+        var that=this;
+        this.dom.on("click",function (e) {
+            if(that.isChecked)
+            {
+                that.unCheck();
+            }
+            else
+            {
+                that.check();
+            }
+            if(that.clickEvent)
+            {
+                that.clickEvent(e,that);
+            }
+            e.stopPropagation();
+        });
+    };
+    OptionItem.prototype.check=function () {
+        this.isChecked=true;
+        this.dom.addClass("selected");
+    };
+    OptionItem.prototype.unCheck=function () {
+        this.isChecked=false;
+        this.dom.removeClass();
+    };
+
+    var SelectedItem=function (text, value,originalData) {
+        this.text=text;
+        this.value=value;
+        this.data=originalData;
+        this.removeEvent=null;
+        this.init();
+    };
+    SelectedItem.prototype.init=function () {
+        this.initDom();
+        this.initEvent();
+    }
+    SelectedItem.prototype.initDom=function () {
+        this.dom=$(_selectedItemTemplate.replace(/\{text}/g,this.text));
+        this.removeDom=this.dom.find(".nc-combo-selected-remove");
+    };
+
+    SelectedItem.prototype.initEvent=function () {
+        var that=this;
+        this.removeDom.on("click",function (e) {
+
+            if(that.removeEvent)
+            {
+                that.removeEvent(e,that);
+            }
+            e.stopPropagation();
+        });
+    };
+
+    ncControl.multiCombo=  function  (id) {
+        var item = _comboDic[id];
+        if (item) {
+            return item;
+        }
+
+        var combo = new MultiCombo(id);
+        _comboDic[id] = combo;
+        return combo;
     }
 })(jQuery.ncControl)
