@@ -174,16 +174,16 @@
     };
     MultiCombo.prototype.initEvent=function () {
         var that=this;
-        this.searchInput.on("focus",function () {
+        this.searchInput.on("focus click",function (e) {
+            that.optionsContainer.parent().fadeIn();
+            e.stopPropagation();
+        });
 
-            that.optionsContainer.parent().show();
-        });
-        this.optionsContainer.parent().on("blur",function () {
-            that.optionsContainer.parent().hide();
-        });
-        this.layer.on("click",function () {
-            that.searchInput.focus();
-        }) ;
+        $(document).on("click",function (e) {
+            that.optionsContainer.parent().fadeOut();
+            console.log(e.target)
+        })
+
     };
     MultiCombo.prototype.setOptions=function (opts) {
         var options=$.extend({
@@ -234,12 +234,20 @@
         that.selectedItems.push(item);
     };
     MultiCombo.prototype.removeSelectedItem=function (value) {
+        var that=this;
         var item=this.selectedItems.findOne(function (n) {
             return n.value===value;
         });
         if(item){
-            this.selectedItems.remove(item);
+            that.selectedItems.remove(item);
             item.dom.remove();
+            var optionItem= that.dataSource.findOne(function (n) {
+                return n.value===value;
+            });
+            if(optionItem)
+            {
+                optionItem.unCheck();
+            }
         }
     };
     var OptionItem=function (text,value,originalData) {
