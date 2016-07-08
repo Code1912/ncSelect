@@ -38,19 +38,19 @@
     outline: none;
 }
 .nc-combo-input:focus {
-
     list-style: none;
     outline: none;
 }
 .nc-combo-options-container{
     position: absolute;
-    height: 100px;
     overflow-y:auto;
     overflow-x: hidden;
     border-left:1px solid  #D2D6DE;
     border-top:1px solid  #D2D6DE;
     border-bottom:1px solid  #D2D6DE; width: 100%; background-color: white;
    display: none;
+    min-height: 2px;
+    max-height: 200px;
 }
 .nc-combo-options-container ul{
     list-style-type: none;
@@ -66,7 +66,6 @@
 .nc-combo-options-container ul li.selected{
     background-color: #3c8dbc;
     border-color: #367fa9;
-
     color: #fff;
 }
 .nc-combo-options-container ul li:hover,.nc-combo-options-container ul li.selected:hover{

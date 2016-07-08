@@ -19,6 +19,17 @@
             }
         }
     }
+    if(!Array.prototype.findAll) {
+        Array.prototype.findAll = function (fn) {
+            var array=[];
+            for (var i = 0; i < this.length; i++) {
+                if (fn(this[i])) {
+                    array.push(this[i]);
+                }
+            }
+            return array;
+        }
+    }
     if(!Array.prototype.remove){
         Array.prototype.remove=function (item) {
             var index=this.indexOf(item);
@@ -124,6 +135,39 @@
 
             return ChildClass;
         };
+        var Observable = function () {
+            this.listeners = {};
+        };
+        Observable.prototype.on = function (event, callback) {
+            this.listeners = this.listeners || {};
+
+            if (event in this.listeners) {
+                this.listeners[event].push(callback);
+            } else {
+                this.listeners[event] = [callback];
+            }
+        };
+
+        Observable.prototype.trigger = function (event) {
+            var slice = Array.prototype.slice;
+
+            this.listeners = this.listeners || {};
+
+            if (event in this.listeners) {
+                this.invoke(this.listeners[event], slice.call(arguments, 1));
+            }
+
+            if ('*' in this.listeners) {
+                this.invoke(this.listeners['*'], arguments);
+            }
+        };
+
+        Observable.prototype.invoke = function (listeners, params) {
+            for (var i = 0, len = listeners.length; i < len; i++) {
+                listeners[i].apply(this, params);
+            }
+        };
+        jQuery.ncUtils.observable=Observable;
     }
 })();
 
@@ -154,8 +198,9 @@
     }
     var MultiCombo=function (id) {
         this.id=id;
-        this.selectedItems=[];
-        this.dataSource=[];
+        this.__selectedItems=[];
+        this.__tempDataSource=[];
+        this.__dataSrouce=[];
         this.init();
     };
     MultiCombo.prototype.init=function () {
@@ -174,28 +219,58 @@
     };
     MultiCombo.prototype.initEvent=function () {
         var that=this;
-        this.searchInput.on("focus click",function (e) {
-            that.optionsContainer.parent().fadeIn();
+        that.searchInput.on("focus click",function (e) {
+            that.optionsContainer.parent().show();
             e.stopPropagation();
         });
+        that.searchInput.on("keyup",function (e) {
+            var searchText = $.trim(that.searchInput.val());
+            console.log(searchText)
+            var needBindDataSource=[];
+            if(searchText!==""){
+                needBindDataSource=  that.__dataSrouce.findAll(function (p) {
+                    return (p.text||"").toString().indexOf(searchText)>-1;
+                })
+            }
+            else
+            {
+                needBindDataSource= that.__dataSrouce;
+            }
+            that.__tempDataSource.forEach(function (p) {
+                p.dom.remove();
+            });
+            that.__tempDataSource=[].concat(needBindDataSource);
+            that.__tempDataSource.forEach(function (p) {
+                p.initEvent();
+                that.optionsContainer.append(p.dom);
+                if(that.__selectedItems.any(function (n) {
+                      return n.value==p.value;
+                    })){
+                    p.check();
+                }else {
+                    p.unCheck();
+                }
+            })
 
+        });
         $(document).on("click",function (e) {
-            that.optionsContainer.parent().fadeOut();
-            console.log(e.target)
+            that.optionsContainer.parent().hide();
         })
 
-    };
+    }; 
     MultiCombo.prototype.setOptions=function (opts) {
         var options=$.extend({
-            height:50,
+            schema:{text:"text",value:"value"},
             dataSource:[],
             selectedItems:[]
         },opts);
+        var schema=options.schema; 
         var that=this;
-        that.dataSource=[];
-        that.selectedItems=[];
+        that.schema=schema;
+        that.__tempDataSource=[];
+        that.__selectedItems=[];
         options.dataSource.forEach(function (p) {
-            var item=new OptionItem(p.text,p.value,p);
+            var item=new OptionItem(p[schema.text],p[schema.value],p);
             item.clickEvent=function (e,data) {
                 if(data.isChecked)
                 {
@@ -206,20 +281,21 @@
                 }
             };
             that.optionsContainer.append(item.dom);
-            that.dataSource.push(item);
+            that.__tempDataSource.push(item);
+            that.__dataSrouce.push(item);
         });
         options.selectedItems.forEach(function (p) {
-            that.addSelectedItem(p.text,p.value,p);
+            that.addSelectedItem(p[schema.text],p[schema.value],p);
         })
     };
     MultiCombo.prototype.addSelectedItem=function (text, value, originalData) {
         var that=this;
-        if(that.selectedItems.any(function (n) {
+        if(that.__selectedItems.any(function (n) {
                 return n.value===value;
             })){
             return;
         };
-        var optionItem= that.dataSource.findOne(function (n) {
+        var optionItem= that.__tempDataSource.findOne(function (n) {
             return n.value===value;
         });
         if(optionItem)
@@ -231,17 +307,17 @@
             that.removeSelectedItem(data.value);
         };
         item.dom.insertBefore(that.searchInput.parent());
-        that.selectedItems.push(item);
+        that.__selectedItems.push(item);
     };
     MultiCombo.prototype.removeSelectedItem=function (value) {
         var that=this;
-        var item=this.selectedItems.findOne(function (n) {
+        var item=this.__selectedItems.findOne(function (n) {
             return n.value===value;
         });
         if(item){
-            that.selectedItems.remove(item);
+            that.__selectedItems.remove(item);
             item.dom.remove();
-            var optionItem= that.dataSource.findOne(function (n) {
+            var optionItem= that.__tempDataSource.findOne(function (n) {
                 return n.value===value;
             });
             if(optionItem)
@@ -249,6 +325,43 @@
                 optionItem.unCheck();
             }
         }
+    };
+    MultiCombo.prototype.getSelected=function () {
+        var array=[];
+        this.__selectedItems.forEach(function (res) {
+            array.push(res.data)
+        });
+        return array;
+    };
+    MultiCombo.prototype.setSelected=function (data) {
+         if(data.constructor !== Array){
+             return
+         };
+        var that=this;
+        this.__selectedItems.forEach(function (p) {
+            p.dom.remove();
+        });
+        this.__selectedItems=[];
+        this.__tempDataSource.forEach(function (p) {
+            p.unCheck();
+        });
+        data.forEach(function (p) {
+            var findItem=that.__tempDataSource.findOne(function (n) {
+              return  n.value==p[that.schema.value];
+            });
+            if(!findItem)
+            {
+                return;
+            }
+            that.addSelectedItem(p[that.schema.text],p[that.schema.value],p);
+        });
+    };
+    MultiCombo.prototype.getSelected=function () {
+        var array=[];
+        this.__selectedItems.forEach(function (res) {
+            array.push(res.data)
+        });
+        return array;
     };
     var OptionItem=function (text,value,originalData) {
         this.text=text;

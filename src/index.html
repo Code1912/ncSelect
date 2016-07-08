@@ -43,20 +43,44 @@
     </div>
  -->
     <div style="margin-top: 700px" id="test"></div>
+
+
 </div>
-<button>sdf</button>
+<button onclick="getSelected()">Get</button>
+<button onclick="setSelected()">Set</button>
 </body>
 <script src="jQuery-2.1.4.min.js"></script>
 <script src="ncSelect.js"></script>
 <script>
     $.ncControl.multiCombo("test").setOptions({
-        dataSource:[{text:"111",value:1},
-            {text:"222",value:2},
-            {text:"333",value:3},
-            {text:"444",value:4},
+        dataSource:[{name:"111",id:1},
+            {name:"222",id:2},
+            {name:"333aaa",id:3},
+            {name:"444bbb",id:4},
+            {name:"5dfddf",id:5},
+            {name:"6sdfg",id:6},
+            {name:"7gg",id:7},
+            {name:"8fsdsd",id:8},
+            {name:"444bbb",id:9},
+            {name:"5dfddf",id:10},
+            {name:"6sdfg",id:11},
+            {name:"7gg",id:12},
+            {name:"8fsdsd",id:13}
         ],
-        selectedItems:[{text:"111",value:1},
-            {text:"222",value:2}]
+        schema:{text:"name",value:"id"},
+        selectedItems:[{name:"111",id:1},
+            {name:"222",id:2}]
     });
+
+    function getSelected() {
+        console.log($.ncControl.multiCombo("test").getSelected())
+    }
+    function setSelected() {
+        $.ncControl.multiCombo("test").setSelected([{name:"5",id:5},{name:"xxxx",id:455},
+            {name:"6",id:6},
+            {name:"7",id:7},
+            {name:"8",id:8}]);
+        console.log($.ncControl.multiCombo("test").getSelected())
+    }
 </script>
 </html>
