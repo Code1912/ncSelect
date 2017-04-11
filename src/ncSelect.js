@@ -52,7 +52,7 @@
             return false;
         }
     }
-    if(!Array.prototype.any) {
+    if(!Array.prototype.all) {
         Array.prototype.all = function (fn) {
             if (this.length == 0) {
                 return false;
@@ -80,7 +80,7 @@
                 else {
                     for (var i = 0; i < arguments.length; i++) {
                         if (arguments[i] != undefined) {
-                            //var reg = new RegExp("({[" + i + "]})", "g");//这个在索引大于9时会有问题，谢谢何以笙箫的指出
+                            //var reg = new RegExp("({[" + i + "]})", "g");
                             var reg= new RegExp("({)" + i + "(})", "g");
                             result = result.replace(reg, arguments[i]);
                         }
